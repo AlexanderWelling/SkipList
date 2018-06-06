@@ -51,4 +51,11 @@ public class SkipElement<T extends Comparable<T>> {
     {
         return value == null;
     }
+    @Override
+    public String toString()
+    {
+        if(value != null)
+            return value.toString();
+        else return "null";
+    }
 }

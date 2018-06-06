@@ -20,7 +20,7 @@ public class SkipList<T extends Comparable<T>> implements List<T>{
 
         SkipElement currFirstSen =  this.firstSentinal;
         SkipElement currLastSen =  this.lastSentinal;
-        for(int i = 0; i < maxLevel; i++)
+        for(int i = 1; i < maxLevel; i++)
         {
             currFirstSen.setNextLevel(new SkipElement());
             currLastSen.setNextLevel(new SkipElement());
@@ -72,36 +72,92 @@ public class SkipList<T extends Comparable<T>> implements List<T>{
     @Override
     public boolean add(T t) {
         SkipElement currentElement = firstSentinal;
+        SkipElement [] downer = new SkipElement[this.maxLevel];
+        int currentLevel = maxLevel;
+        Random random = new Random();
 
         while(currentElement.getNextLevel() != null)
         {
-            if(!currentElement.getNext().isSentinal() || currentElement.getNext().getValue().compareTo(t) < 0)
+            if(!currentElement.getNext().isSentinal() && currentElement.getNext().getValue().compareTo(t) < 0)
             {
                 currentElement = currentElement.getNext();
             }
-            else currentElement = currentElement.getNextLevel();
+            else
+            {
+                downer[currentLevel-1] = currentElement;
+                currentLevel--;
+                currentElement = currentElement.getNextLevel();
+            }
         }
+        while(!currentElement.getNext().isSentinal() && currentElement.getNext().getValue().compareTo(t) < 0)
+        {
+            currentElement = currentElement.getNext();
+        }
+        SkipElement lastInserted = new SkipElement(t, currentElement.getNext());
+        currentElement.setNext(lastInserted);
 
-        currentElement.setNext(new SkipElement(t, currentElement.getNext()));
-
+        for(int i = 1; i < downer.length; i++)
+        {
+            if(random.nextDouble() < PROBABILITY)
+            {
+                lastInserted = new SkipElement(t,downer[i].getNext(),lastInserted);
+                downer[i].setNext(lastInserted);
+            }
+            else break;
+        }
 
         return true;
     }
 
+    public boolean printLevel(int level)
+    {
+        if(level > maxLevel || level < 0)
+        {
+            return false;
+        }
+        SkipElement currentElement = firstSentinal;
+        for(int i = maxLevel; i > level ;i--)
+        {
+            currentElement = currentElement.getNextLevel();
+        }
+        currentElement = currentElement.getNext();
+        System.out.print("Level " + level + " =>  ");
+        while (!currentElement.isSentinal())
+        {
+            System.out.println(currentElement.toString());
+            currentElement = currentElement.getNext();
+        }
+        System.out.println();
+        return true;
+    }
+
+    public boolean printAllLevel()
+    {
+        boolean success = true;
+        for(int i = 1; i < maxLevel + 1; i++)
+        {
+            success = printLevel(i);
+        }
+        return success;
+    }
 
     @Override
     public boolean remove(Object o) {
         SkipElement currentElement = firstSentinal;
-
+        SkipElement [] downer = new SkipElement[this.maxLevel];
         while(currentElement.getNextLevel() != null)
         {
             if(!currentElement.getNext().isSentinal() || currentElement.getNext().getValue().compareTo(o) != 0)
             {
                 currentElement = currentElement.getNext();
             }
-            else currentElement = currentElement.getNextLevel();
+            else
+            {
+                currentElement = currentElement.getNextLevel();
+            }
         }
         currentElement.setNext(currentElement.getNext().getNext());
+
         return true;
     }
 
@@ -184,11 +240,11 @@ public class SkipList<T extends Comparable<T>> implements List<T>{
 
     public T getFirst()
     {
-
+        return null;
     }
 
     public T getLast()
     {
-
+        return null;
     }
 }
